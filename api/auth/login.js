@@ -1,4 +1,4 @@
-const auth = require('../../db/auth-storage');
+const auth = require('../../db/postgres-auth');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
