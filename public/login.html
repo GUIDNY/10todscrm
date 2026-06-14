@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10dots CRM - התחברות</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Hanken Grotesk', sans-serif; }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-600 to-blue-900 min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-xl shadow-lg mb-4">
+        <span class="material-symbols-outlined text-blue-600" style="font-size: 32px; font-variation-settings: 'FILL' 1;">grid_view</span>
+      </div>
+      <h1 class="text-3xl font-bold text-white mb-2">10dots CRM</h1>
+      <p class="text-blue-100">מערכת ניהול חכמה</p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-white rounded-2xl shadow-2xl p-8 mb-4">
+      <div class="mb-6">
+        <h2 id="formTitle" class="text-2xl font-bold text-slate-900 text-center">התחברות</h2>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">דוא"ל</label>
+          <input type="email" id="email" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right" placeholder="your@email.com" required>
+        </div>
+
+        <div id="nameField" class="hidden">
+          <label class="block text-sm font-semibold text-slate-700 mb-2">שם מלא</label>
+          <input type="text" id="name" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right" placeholder="שם וחולים">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">סיסמה</label>
+          <input type="password" id="password" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors mt-6">
+          <span id="submitText">התחברות</span>
+        </button>
+      </form>
+
+      <!-- Toggle Form -->
+      <div class="mt-6 text-center">
+        <p class="text-slate-600 text-sm">
+          <span id="toggleText">אין לך חשבון?</span>
+          <button type="button" onclick="toggleForm()" class="text-blue-600 font-semibold hover:text-blue-700 mr-1">
+            <span id="toggleLink">הירשם כאן</span>
+          </button>
+        </p>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-sm text-right"></div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg text-sm text-right"></div>
+  </div>
+
+  <script>
+    let isLoginMode = true;
+
+    function toggleForm() {
+      isLoginMode = !isLoginMode;
+      document.getElementById('formTitle').textContent = isLoginMode ? 'התחברות' : 'הרשמה';
+      document.getElementById('nameField').classList.toggle('hidden');
+      document.getElementById('submitText').textContent = isLoginMode ? 'התחברות' : 'הרשמה';
+      document.getElementById('toggleText').textContent = isLoginMode ? 'אין לך חשבון?' : 'כבר יש לך חשבון?';
+      document.getElementById('toggleLink').textContent = isLoginMode ? 'הירשם כאן' : 'התחברות';
+      document.getElementById('name').value = '';
+      hideMessages();
+    }
+
+    function hideMessages() {
+      document.getElementById('errorMessage').classList.add('hidden');
+      document.getElementById('successMessage').classList.add('hidden');
+    }
+
+    function showError(message) {
+      hideMessages();
+      document.getElementById('errorMessage').textContent = message;
+      document.getElementById('errorMessage').classList.remove('hidden');
+    }
+
+    function showSuccess(message) {
+      hideMessages();
+      document.getElementById('successMessage').textContent = message;
+      document.getElementById('successMessage').classList.remove('hidden');
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideMessages();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const name = document.getElementById('name').value;
+
+      try {
+        const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
+        const body = isLoginMode
+          ? { email, password }
+          : { email, password, name };
+
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showError(data.error || 'שגיאה בתהליך');
+          return;
+        }
+
+        if (isLoginMode) {
+          // Login success
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          showSuccess('התחברות בוצעה בהצלחה!');
+          setTimeout(() => {
+            window.location.href = '/dashboard.html';
+          }, 1000);
+        } else {
+          // Register success
+          showSuccess('הרשמה בוצעה בהצלחה! אתה יכול להתחבר עכשיו');
+          toggleForm();
+          document.getElementById('loginForm').reset();
+        }
+      } catch (error) {
+        showError('שגיאה: ' + error.message);
+      }
+    });
+
+    // Check if already logged in
+    if (localStorage.getItem('token')) {
+      window.location.href = '/dashboard.html';
+    }
+  </script>
+</body>
+</html>

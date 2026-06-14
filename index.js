@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { tasks, customers, users, connectDB } = require('./db/mongodb-storage');
+const auth = require('./db/auth-storage');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,9 +14,64 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 connectDB();
 
-// Root - Serve professional dashboard
+// Middleware to verify token
+const verifyToken = async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const user = await auth.verify(token);
+    req.user = user;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+// Auth Routes
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { email, name, password } = req.body;
+    if (!email || !password || !name) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    await auth.register(email, name, password);
+    res.json({ success: true, message: 'Registration successful' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
+    }
+
+    const result = await auth.login(email, password);
+    res.json(result);
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+});
+
+app.post('/api/auth/logout', verifyToken, async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    await auth.logout(token);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Root - Serve login
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 // Health check
@@ -24,7 +80,7 @@ app.get('/health', (req, res) => {
 });
 
 // TASKS API
-app.get('/api/tasks', async (req, res) => {
+app.get('/api/tasks', verifyToken, async (req, res) => {
   try {
     const allTasks = await tasks.getAll();
     const status = req.query.status;
@@ -38,7 +94,7 @@ app.get('/api/tasks', async (req, res) => {
   }
 });
 
-app.post('/api/tasks', async (req, res) => {
+app.post('/api/tasks', verifyToken, async (req, res) => {
   try {
     const { title, description, customerId, dueDate, priority } = req.body;
     if (!title) {
@@ -51,7 +107,7 @@ app.post('/api/tasks', async (req, res) => {
   }
 });
 
-app.get('/api/tasks/:id', async (req, res) => {
+app.get('/api/tasks/:id', verifyToken, async (req, res) => {
   try {
     const task = await tasks.getById(req.params.id);
     if (!task) {
@@ -63,7 +119,7 @@ app.get('/api/tasks/:id', async (req, res) => {
   }
 });
 
-app.put('/api/tasks/:id/status', async (req, res) => {
+app.put('/api/tasks/:id/status', verifyToken, async (req, res) => {
   try {
     const { status } = req.body;
     if (!status) {
@@ -79,7 +135,7 @@ app.put('/api/tasks/:id/status', async (req, res) => {
   }
 });
 
-app.delete('/api/tasks/:id', async (req, res) => {
+app.delete('/api/tasks/:id', verifyToken, async (req, res) => {
   try {
     await tasks.delete(req.params.id);
     res.json({ success: true });
@@ -89,7 +145,7 @@ app.delete('/api/tasks/:id', async (req, res) => {
 });
 
 // CUSTOMERS API
-app.get('/api/customers', async (req, res) => {
+app.get('/api/customers', verifyToken, async (req, res) => {
   try {
     const allCustomers = await customers.getAll();
     res.json(allCustomers);
@@ -98,7 +154,7 @@ app.get('/api/customers', async (req, res) => {
   }
 });
 
-app.post('/api/customers', async (req, res) => {
+app.post('/api/customers', verifyToken, async (req, res) => {
   try {
     const { name, email, phone, notes } = req.body;
     if (!name) {
@@ -111,7 +167,7 @@ app.post('/api/customers', async (req, res) => {
   }
 });
 
-app.get('/api/customers/:id', async (req, res) => {
+app.get('/api/customers/:id', verifyToken, async (req, res) => {
   try {
     const customer = await customers.getById(req.params.id);
     if (!customer) {
@@ -123,7 +179,7 @@ app.get('/api/customers/:id', async (req, res) => {
   }
 });
 
-app.put('/api/customers/:id', async (req, res) => {
+app.put('/api/customers/:id', verifyToken, async (req, res) => {
   try {
     const customer = await customers.update(req.params.id, req.body);
     if (!customer) {
@@ -135,7 +191,7 @@ app.put('/api/customers/:id', async (req, res) => {
   }
 });
 
-app.get('/api/customers/:id/tasks', async (req, res) => {
+app.get('/api/customers/:id/tasks', verifyToken, async (req, res) => {
   try {
     const allTasks = await tasks.getAll();
     const customerTasks = allTasks.filter(t => t.customerId === req.params.id);
@@ -146,7 +202,7 @@ app.get('/api/customers/:id/tasks', async (req, res) => {
 });
 
 // STATS API
-app.get('/api/stats', async (req, res) => {
+app.get('/api/stats', verifyToken, async (req, res) => {
   try {
     const allTasks = await tasks.getAll();
     const allCustomers = await customers.getAll();
@@ -163,7 +219,7 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // USERS API
-app.get('/api/users', async (req, res) => {
+app.get('/api/users', verifyToken, async (req, res) => {
   try {
     const allUsers = await users.getAll();
     res.json(allUsers);

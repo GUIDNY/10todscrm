@@ -2,7 +2,7 @@
 <html dir="rtl" lang="he">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>10dots CRM</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -11,23 +11,32 @@
     body { font-family: 'Hanken Grotesk', sans-serif; }
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      display: inline-block;
-      vertical-align: middle;
     }
     .material-symbols-outlined.filled {
       font-variation-settings: 'FILL' 1;
     }
     .soft-shadow { box-shadow: 0 12px 24px -6px rgba(26, 35, 126, 0.06); }
     .soft-shadow-hover:hover { box-shadow: 0 20px 32px -8px rgba(26, 35, 126, 0.1); }
-    .nav-link.active { @apply bg-blue-50 text-blue-600 font-semibold; }
+    .nav-link.active { @apply bg-blue-100 text-blue-600; }
     .page { display: none; }
     .page.active { display: block; }
+
+    /* Mobile-first design */
+    @media (min-width: 768px) {
+      .mobile-sidebar { display: none !important; }
+      .desktop-sidebar { display: flex !important; }
+      main { @apply mr-64; }
+    }
+
+    @media (max-width: 767px) {
+      .desktop-sidebar { display: none !important; }
+      main { @apply mb-20; }
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
-  <!-- Sidebar -->
-  <aside class="w-64 h-screen fixed right-0 top-0 bg-white border-l border-slate-200 p-6 flex flex-col">
-    <!-- Logo -->
+  <!-- Desktop Sidebar -->
+  <aside class="desktop-sidebar hidden w-64 h-screen fixed right-0 top-0 bg-white border-l border-slate-200 p-6 flex flex-col">
     <div class="mb-8 flex items-center gap-3">
       <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
         <span class="material-symbols-outlined filled">grid_view</span>
@@ -38,7 +47,6 @@
       </div>
     </div>
 
-    <!-- Navigation -->
     <nav class="flex-1 space-y-2">
       <button onclick="showPage('dashboard')" class="nav-link active w-full text-right flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-600 rounded-lg font-semibold">
         <span class="material-symbols-outlined">dashboard</span>
@@ -58,149 +66,135 @@
       </button>
     </nav>
 
-    <!-- User Profile -->
     <div class="pt-4 border-t border-slate-200">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-600 font-bold">א</div>
-        <div>
-          <p class="font-semibold text-sm">אבי כהן</p>
-          <p class="text-xs text-slate-500">מנהל מערכת</p>
-        </div>
-      </div>
+      <button onclick="logout()" class="w-full text-right flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg font-semibold">
+        <span class="material-symbols-outlined">logout</span>
+        <span>התנתקות</span>
+      </button>
     </div>
   </aside>
 
+  <!-- Mobile Bottom Navigation -->
+  <nav class="mobile-sidebar fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around px-4 py-2 z-50 md:hidden">
+    <button onclick="showPage('dashboard')" class="nav-link active flex flex-col items-center gap-1 px-4 py-3 text-xs rounded-lg flex-1">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span>בקרה</span>
+    </button>
+    <button onclick="showPage('customers')" class="nav-link flex flex-col items-center gap-1 px-4 py-3 text-xs rounded-lg flex-1">
+      <span class="material-symbols-outlined">group</span>
+      <span>לקוחות</span>
+    </button>
+    <button onclick="showPage('tasks')" class="nav-link flex flex-col items-center gap-1 px-4 py-3 text-xs rounded-lg flex-1">
+      <span class="material-symbols-outlined">assignment</span>
+      <span>משימות</span>
+    </button>
+    <button onclick="showPage('reports')" class="nav-link flex flex-col items-center gap-1 px-4 py-3 text-xs rounded-lg flex-1">
+      <span class="material-symbols-outlined">bar_chart</span>
+      <span>דוחות</span>
+    </button>
+    <button onclick="logout()" class="flex flex-col items-center gap-1 px-4 py-3 text-xs text-red-600 rounded-lg flex-1">
+      <span class="material-symbols-outlined">logout</span>
+      <span>יציאה</span>
+    </button>
+  </nav>
+
   <!-- Main Content -->
-  <main class="mr-64 min-h-screen p-8">
+  <main class="min-h-screen p-4 md:p-8">
+    <!-- Top Bar for Mobile -->
+    <div class="md:hidden mb-6 flex justify-between items-center">
+      <button onclick="logout()" class="text-red-600">
+        <span class="material-symbols-outlined">logout</span>
+      </button>
+      <h1 class="font-bold text-xl text-blue-600">10dots CRM</h1>
+      <div id="userInitial" class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-600 font-bold"></div>
+    </div>
+
     <!-- DASHBOARD PAGE -->
     <div id="dashboard" class="page active">
-      <!-- Header -->
-      <header class="mb-8">
-        <h2 class="text-3xl font-bold text-blue-900 mb-2">שלום, אבי</h2>
-        <p class="text-slate-600">ברוך הבא ל-10dots CRM. הנה תמונת המצב של העסק שלך להיום.</p>
+      <header class="mb-6 md:mb-8">
+        <h2 class="text-2xl md:text-3xl font-bold text-blue-900 mb-2">שלום!</h2>
+        <p class="text-slate-600 text-sm md:text-base">ברוך הבא ל-10dots CRM</p>
       </header>
 
       <!-- KPI Cards -->
-      <section class="grid grid-cols-4 gap-6 mb-8">
-        <div class="bg-white p-6 rounded-xl soft-shadow soft-shadow-hover border border-slate-200">
-          <div class="flex justify-between items-start mb-4">
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
-              <span class="material-symbols-outlined">person_add</span>
-            </div>
-            <span class="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded">+12%</span>
-          </div>
-          <p class="text-2xl font-bold text-slate-900 mb-1" id="kpiCustomers">0</p>
-          <p class="text-sm text-slate-600">סה"כ לקוחות</p>
+      <section class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
+        <div class="bg-white p-4 md:p-6 rounded-xl soft-shadow border border-slate-200">
+          <div class="text-3xl md:text-4xl font-bold text-blue-600 mb-2" id="kpiCustomers">0</div>
+          <p class="text-xs md:text-sm text-slate-600">לקוחות</p>
         </div>
 
-        <div class="bg-white p-6 rounded-xl soft-shadow soft-shadow-hover border border-slate-200">
-          <div class="flex justify-between items-start mb-4">
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
-              <span class="material-symbols-outlined">task_alt</span>
-            </div>
-            <span class="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded">+8%</span>
-          </div>
-          <p class="text-2xl font-bold text-slate-900 mb-1" id="kpiDone">0</p>
-          <p class="text-sm text-slate-600">משימות שהושלמו</p>
+        <div class="bg-white p-4 md:p-6 rounded-xl soft-shadow border border-slate-200">
+          <div class="text-3xl md:text-4xl font-bold text-green-600 mb-2" id="kpiDone">0</div>
+          <p class="text-xs md:text-sm text-slate-600">הושלמו</p>
         </div>
 
-        <div class="bg-white p-6 rounded-xl soft-shadow soft-shadow-hover border border-slate-200">
-          <div class="flex justify-between items-start mb-4">
-            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center text-red-600">
-              <span class="material-symbols-outlined">pending_actions</span>
-            </div>
-            <span class="text-sm font-bold text-red-600 bg-red-50 px-2 py-1 rounded">-3%</span>
-          </div>
-          <p class="text-2xl font-bold text-slate-900 mb-1" id="kpiOpen">0</p>
-          <p class="text-sm text-slate-600">משימות פתוחות</p>
+        <div class="bg-white p-4 md:p-6 rounded-xl soft-shadow border border-slate-200">
+          <div class="text-3xl md:text-4xl font-bold text-orange-600 mb-2" id="kpiOpen">0</div>
+          <p class="text-xs md:text-sm text-slate-600">פתוחות</p>
         </div>
 
-        <div class="bg-white p-6 rounded-xl soft-shadow soft-shadow-hover border border-slate-200">
-          <div class="flex justify-between items-start mb-4">
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
-              <span class="material-symbols-outlined">list_alt</span>
-            </div>
-            <span class="text-sm font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">יציב</span>
-          </div>
-          <p class="text-2xl font-bold text-slate-900 mb-1" id="kpiTotal">0</p>
-          <p class="text-sm text-slate-600">סה"כ משימות</p>
+        <div class="bg-white p-4 md:p-6 rounded-xl soft-shadow border border-slate-200">
+          <div class="text-3xl md:text-4xl font-bold text-purple-600 mb-2" id="kpiTotal">0</div>
+          <p class="text-xs md:text-sm text-slate-600">משימות</p>
         </div>
       </section>
 
-      <!-- Main Grid -->
-      <div class="grid grid-cols-3 gap-6">
-        <!-- Tasks Section -->
-        <section class="col-span-2 bg-white rounded-xl soft-shadow border border-slate-200 overflow-hidden">
-          <div class="p-6 border-b border-slate-200 flex justify-between items-center">
-            <div>
-              <h3 class="text-lg font-bold text-blue-900">משימות אחרונות</h3>
-              <p class="text-sm text-slate-600">5 משימות אחרונות</p>
-            </div>
-            <button onclick="showPage('tasks')" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 flex items-center gap-2">
-              <span class="material-symbols-outlined text-base">arrow_forward</span>
-              לכל המשימות
-            </button>
+      <!-- Tasks Table -->
+      <section class="bg-white rounded-xl soft-shadow border border-slate-200 overflow-hidden">
+        <div class="p-4 md:p-6 border-b border-slate-200 flex justify-between items-center">
+          <div>
+            <h3 class="text-lg font-bold text-blue-900">משימות אחרונות</h3>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-right">
-              <thead class="bg-slate-50">
-                <tr>
-                  <th class="px-6 py-4 text-sm font-bold text-slate-600">נושא המשימה</th>
-                  <th class="px-6 py-4 text-sm font-bold text-slate-600">לקוח</th>
-                  <th class="px-6 py-4 text-sm font-bold text-slate-600">סטטוס</th>
-                  <th class="px-6 py-4 text-sm font-bold text-slate-600">עדיפות</th>
-                </tr>
-              </thead>
-              <tbody id="dashboardTasksTableBody" class="divide-y divide-slate-200">
-                <tr class="hover:bg-slate-50">
-                  <td colspan="4" class="px-6 py-8 text-center text-slate-500">טוען משימות...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- Activity Section -->
-        <section class="bg-white rounded-xl soft-shadow border border-slate-200 p-6">
-          <h3 class="text-lg font-bold text-blue-900 mb-6">פעילות אחרונה</h3>
-          <div id="activityFeed" class="space-y-4">
-            <p class="text-sm text-slate-500">טוען פעילויות...</p>
-          </div>
-        </section>
-      </div>
+          <button onclick="openTaskModal()" class="bg-blue-600 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg font-semibold hover:bg-blue-700 text-sm md:text-base flex items-center gap-1">
+            <span class="material-symbols-outlined text-base">add</span>
+            <span class="hidden md:inline">משימה</span>
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-right text-sm md:text-base">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">משימה</th>
+                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">סטטוס</th>
+                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">עדיפות</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardTasksTableBody" class="divide-y divide-slate-200">
+              <tr>
+                <td colspan="3" class="px-3 md:px-6 py-4 text-center text-slate-500 text-sm">טוען...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
 
     <!-- CUSTOMERS PAGE -->
     <div id="customers" class="page">
-      <header class="mb-8">
-        <h2 class="text-3xl font-bold text-blue-900 mb-2">לקוחות</h2>
-        <p class="text-slate-600">ניהול מרכזי של לקוחות ופרטיהם</p>
+      <header class="mb-6">
+        <h2 class="text-2xl md:text-3xl font-bold text-blue-900 mb-2">לקוחות</h2>
       </header>
 
       <section class="bg-white rounded-xl soft-shadow border border-slate-200 overflow-hidden">
-        <div class="p-6 border-b border-slate-200 flex justify-between items-center">
-          <div>
-            <h3 class="text-lg font-bold text-blue-900">רשימת לקוחות</h3>
-            <p class="text-sm text-slate-600">כל הלקוחות של המערכת</p>
-          </div>
-          <button onclick="openCustomerModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 flex items-center gap-2">
+        <div class="p-4 md:p-6 border-b border-slate-200 flex justify-between items-center">
+          <h3 class="text-lg font-bold text-blue-900">רשימת לקוחות</h3>
+          <button onclick="openCustomerModal()" class="bg-blue-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-blue-700 text-sm flex items-center gap-1">
             <span class="material-symbols-outlined text-base">add</span>
-            לקוח חדש
+            <span class="hidden md:inline">לקוח</span>
           </button>
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-right">
+          <table class="w-full text-right text-sm">
             <thead class="bg-slate-50">
               <tr>
-                <th class="px-6 py-4 text-sm font-bold text-slate-600">שם הלקוח</th>
-                <th class="px-6 py-4 text-sm font-bold text-slate-600">אימייל</th>
-                <th class="px-6 py-4 text-sm font-bold text-slate-600">טלפון</th>
-                <th class="px-6 py-4 text-sm font-bold text-slate-600">תאריך הוספה</th>
+                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">שם</th>
+                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600 hidden md:table-cell">דוא"ל</th>
+                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600 hidden md:table-cell">טלפון</th>
               </tr>
             </thead>
             <tbody id="customersTableBody" class="divide-y divide-slate-200">
-              <tr class="hover:bg-slate-50">
-                <td colspan="4" class="px-6 py-8 text-center text-slate-500">טוען לקוחות...</td>
+              <tr>
+                <td colspan="3" class="px-3 md:px-6 py-4 text-center text-slate-500 text-sm">טוען...</td>
               </tr>
             </tbody>
           </table>
@@ -210,35 +204,30 @@
 
     <!-- TASKS PAGE -->
     <div id="tasks" class="page">
-      <header class="mb-8">
-        <h2 class="text-3xl font-bold text-blue-900 mb-2">משימות</h2>
-        <p class="text-slate-600">ניהול ופיקוח על ביצוע המטלות</p>
+      <header class="mb-6">
+        <h2 class="text-2xl md:text-3xl font-bold text-blue-900 mb-2">משימות</h2>
       </header>
 
       <section class="bg-white rounded-xl soft-shadow border border-slate-200 overflow-hidden">
-        <div class="p-6 border-b border-slate-200 flex justify-between items-center">
-          <div>
-            <h3 class="text-lg font-bold text-blue-900">רשימת משימות</h3>
-            <p class="text-sm text-slate-600">כל המשימות של המערכת</p>
-          </div>
-          <button onclick="openTaskModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 flex items-center gap-2">
+        <div class="p-4 md:p-6 border-b border-slate-200 flex justify-between items-center">
+          <h3 class="text-lg font-bold text-blue-900">רשימת משימות</h3>
+          <button onclick="openTaskModal()" class="bg-blue-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-blue-700 text-sm flex items-center gap-1">
             <span class="material-symbols-outlined text-base">add</span>
-            משימה חדשה
+            <span class="hidden md:inline">משימה</span>
           </button>
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-right">
+          <table class="w-full text-right text-sm">
             <thead class="bg-slate-50">
               <tr>
-                <th class="px-6 py-4 text-sm font-bold text-slate-600">נושא המשימה</th>
-                <th class="px-6 py-4 text-sm font-bold text-slate-600">לקוח</th>
-                <th class="px-6 py-4 text-sm font-bold text-slate-600">סטטוס</th>
-                <th class="px-6 py-4 text-sm font-bold text-slate-600">עדיפות</th>
+                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">משימה</th>
+                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">סטטוס</th>
+                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">עדיפות</th>
               </tr>
             </thead>
             <tbody id="tasksTableBody" class="divide-y divide-slate-200">
-              <tr class="hover:bg-slate-50">
-                <td colspan="4" class="px-6 py-8 text-center text-slate-500">טוען משימות...</td>
+              <tr>
+                <td colspan="3" class="px-3 md:px-6 py-4 text-center text-slate-500 text-sm">טוען...</td>
               </tr>
             </tbody>
           </table>
@@ -248,35 +237,34 @@
 
     <!-- REPORTS PAGE -->
     <div id="reports" class="page">
-      <header class="mb-8">
-        <h2 class="text-3xl font-bold text-blue-900 mb-2">דוחות</h2>
-        <p class="text-slate-600">ניתוח וסטטיסטיקות מהמערכת</p>
+      <header class="mb-6">
+        <h2 class="text-2xl md:text-3xl font-bold text-blue-900 mb-2">דוחות</h2>
       </header>
 
-      <div class="grid grid-cols-2 gap-6">
-        <div class="bg-white p-6 rounded-xl soft-shadow border border-slate-200">
-          <h3 class="text-lg font-bold text-blue-900 mb-4">סטטיסטיקות כוללות</h3>
-          <div class="space-y-4">
-            <div class="flex justify-between items-center pb-4 border-b">
-              <span class="text-slate-600">סה"כ לקוחות</span>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div class="bg-white p-4 md:p-6 rounded-xl soft-shadow border border-slate-200">
+          <h3 class="text-lg font-bold text-blue-900 mb-4">סטטיסטיקות</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center pb-3 border-b">
+              <span class="text-slate-600">לקוחות</span>
               <span class="text-2xl font-bold text-blue-600" id="reportCustomers">0</span>
             </div>
-            <div class="flex justify-between items-center pb-4 border-b">
-              <span class="text-slate-600">סה"כ משימות</span>
+            <div class="flex justify-between items-center pb-3 border-b">
+              <span class="text-slate-600">משימות כוללות</span>
               <span class="text-2xl font-bold text-blue-600" id="reportTasks">0</span>
             </div>
-            <div class="flex justify-between items-center pb-4 border-b">
-              <span class="text-slate-600">משימות פתוחות</span>
+            <div class="flex justify-between items-center pb-3 border-b">
+              <span class="text-slate-600">פתוחות</span>
               <span class="text-2xl font-bold text-orange-600" id="reportOpen">0</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-slate-600">משימות שהושלמו</span>
+              <span class="text-slate-600">הושלמו</span>
               <span class="text-2xl font-bold text-green-600" id="reportDone">0</span>
             </div>
           </div>
         </div>
 
-        <div class="bg-white p-6 rounded-xl soft-shadow border border-slate-200">
+        <div class="bg-white p-4 md:p-6 rounded-xl soft-shadow border border-slate-200">
           <h3 class="text-lg font-bold text-blue-900 mb-4">יעילות</h3>
           <div class="space-y-4">
             <div>
@@ -288,12 +276,6 @@
                 <div id="completionBar" class="bg-green-600 h-2 rounded-full" style="width: 0%"></div>
               </div>
             </div>
-            <div>
-              <div class="flex justify-between mb-2">
-                <span class="text-slate-600">משימות ממתינות</span>
-                <span class="font-bold" id="pendingCount">0</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -301,54 +283,36 @@
   </main>
 
   <!-- Task Modal -->
-  <div id="taskModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
-      <h3 class="text-2xl font-bold mb-6 text-blue-900">הוסף משימה חדשה</h3>
+  <div id="taskModal" class="hidden fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-40">
+    <div class="bg-white rounded-t-2xl md:rounded-2xl p-6 max-w-md w-full mx-auto md:mx-0 md:max-h-[90vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-6 text-blue-900">משימה חדשה</h3>
       <form id="taskForm" class="space-y-4">
-        <div>
-          <label class="block text-sm font-semibold text-slate-900 mb-2">כותרת המשימה</label>
-          <input type="text" id="taskTitle" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="לדוגמה: קריאה ללקוח">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-900 mb-2">תיאור</label>
-          <textarea id="taskDescription" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" placeholder="פרטים נוספים..."></textarea>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-900 mb-2">עדיפות</label>
-          <select id="taskPriority" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            <option value="low">נמוכה</option>
-            <option value="medium" selected>בינונית</option>
-            <option value="high">גבוהה</option>
-          </select>
-        </div>
+        <input type="text" id="taskTitle" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="כותרת המשימה" required>
+        <textarea id="taskDescription" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows="3" placeholder="תיאור"></textarea>
+        <select id="taskPriority" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+          <option value="low">עדיפות נמוכה</option>
+          <option value="medium" selected>בינונית</option>
+          <option value="high">גבוהה</option>
+        </select>
         <div class="flex gap-3 pt-4">
-          <button type="submit" class="flex-1 bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700">הוסף משימה</button>
-          <button type="button" onclick="closeTaskModal()" class="flex-1 bg-slate-200 text-slate-900 font-semibold py-2 rounded-lg hover:bg-slate-300">ביטול</button>
+          <button type="submit" class="flex-1 bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700">הוסף</button>
+          <button type="button" onclick="closeTaskModal()" class="flex-1 bg-slate-200 text-slate-900 font-semibold py-3 rounded-lg">ביטול</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Customer Modal -->
-  <div id="customerModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
-      <h3 class="text-2xl font-bold mb-6 text-blue-900">הוסף לקוח חדש</h3>
+  <div id="customerModal" class="hidden fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-40">
+    <div class="bg-white rounded-t-2xl md:rounded-2xl p-6 max-w-md w-full mx-auto md:mx-0 md:max-h-[90vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-6 text-blue-900">לקוח חדש</h3>
       <form id="customerForm" class="space-y-4">
-        <div>
-          <label class="block text-sm font-semibold text-slate-900 mb-2">שם הלקוח</label>
-          <input type="text" id="customerName" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="שם מלא">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-900 mb-2">אימייל</label>
-          <input type="email" id="customerEmail" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="example@email.com">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-900 mb-2">טלפון</label>
-          <input type="tel" id="customerPhone" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="05X-XXXXXXX">
-        </div>
+        <input type="text" id="customerName" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="שם הלקוח" required>
+        <input type="email" id="customerEmail" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="דוא"ל">
+        <input type="tel" id="customerPhone" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="טלפון">
         <div class="flex gap-3 pt-4">
-          <button type="submit" class="flex-1 bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700">הוסף לקוח</button>
-          <button type="button" onclick="closeCustomerModal()" class="flex-1 bg-slate-200 text-slate-900 font-semibold py-2 rounded-lg hover:bg-slate-300">ביטול</button>
+          <button type="submit" class="flex-1 bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700">הוסף</button>
+          <button type="button" onclick="closeCustomerModal()" class="flex-1 bg-slate-200 text-slate-900 font-semibold py-3 rounded-lg">ביטול</button>
         </div>
       </form>
     </div>
@@ -356,6 +320,32 @@
 
   <script>
     const API = '';
+
+    // Check authentication
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const initial = user.name ? user.name.charAt(0).toUpperCase() : '?';
+      document.getElementById('userInitial').textContent = initial;
+    }
+
+    function logout() {
+      if (confirm('האם אתה בטוח שאתה רוצה להתנתק?')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login.html';
+      }
+    }
+
+    function getAuthHeader() {
+      return { 'Authorization': 'Bearer ' + localStorage.getItem('token') };
+    }
 
     function showPage(pageName) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -374,7 +364,7 @@
 
     async function loadStats() {
       try {
-        const res = await fetch(`${API}/api/stats`);
+        const res = await fetch(`${API}/api/stats`, { headers: getAuthHeader() });
         const stats = await res.json();
         document.getElementById('kpiCustomers').textContent = stats.totalCustomers;
         document.getElementById('kpiDone').textContent = stats.doneTasks;
@@ -385,12 +375,12 @@
         document.getElementById('reportOpen').textContent = stats.openTasks;
         document.getElementById('reportDone').textContent = stats.doneTasks;
       } catch (err) {
-        console.error('Error loading stats:', err);
+        console.error('Error:', err);
       }
     }
 
     function updateReports() {
-      fetch(`${API}/api/stats`)
+      fetch(`${API}/api/stats`, { headers: getAuthHeader() })
         .then(r => r.json())
         .then(stats => {
           const total = stats.totalTasks;
@@ -398,121 +388,100 @@
           const rate = total > 0 ? Math.round((done / total) * 100) : 0;
           document.getElementById('completionRate').textContent = rate + '%';
           document.getElementById('completionBar').style.width = rate + '%';
-          document.getElementById('pendingCount').textContent = stats.openTasks;
         })
         .catch(err => console.error('Error:', err));
     }
 
     async function loadTasks() {
       try {
-        const res = await fetch(`${API}/api/tasks`);
+        const res = await fetch(`${API}/api/tasks`, { headers: getAuthHeader() });
         const tasks = await res.json();
         const tbody = document.getElementById('tasksTableBody');
 
         if (!tasks.length) {
-          tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-slate-500">אין משימות כרגע</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="3" class="px-3 md:px-6 py-4 text-center text-slate-500 text-sm">אין משימות</td></tr>';
           return;
         }
 
         tbody.innerHTML = tasks.map(task => `
           <tr class="hover:bg-slate-50">
-            <td class="px-6 py-4 font-semibold text-slate-900">${task.title}</td>
-            <td class="px-6 py-4 text-slate-600">${task.customerId || '-'}</td>
-            <td class="px-6 py-4">
-              <span class="px-3 py-1 rounded-full text-sm font-semibold ${
+            <td class="px-3 md:px-6 py-3 md:py-4 font-semibold text-slate-900 text-sm">${task.title}</td>
+            <td class="px-3 md:px-6 py-3 md:py-4 text-sm">
+              <span class="px-2 py-1 rounded text-xs ${
                 task.status === 'done' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
               }">
-                ${task.status === 'done' ? 'הושלם' : 'בטיפול'}
+                ${task.status === 'done' ? 'הושלם' : 'פתוח'}
               </span>
             </td>
-            <td class="px-6 py-4">
-              <span class="flex items-center gap-1 text-sm font-semibold ${
+            <td class="px-3 md:px-6 py-3 md:py-4 text-sm">
+              <span class="text-xs font-semibold ${
                 task.priority === 'high' ? 'text-red-600' : task.priority === 'medium' ? 'text-yellow-600' : 'text-green-600'
               }">
-                <span class="w-2 h-2 rounded-full ${
-                  task.priority === 'high' ? 'bg-red-600' : task.priority === 'medium' ? 'bg-yellow-600' : 'bg-green-600'
-                }"></span>
                 ${task.priority === 'high' ? 'גבוהה' : task.priority === 'medium' ? 'בינונית' : 'נמוכה'}
               </span>
             </td>
           </tr>
         `).join('');
 
-        // Update dashboard tasks
         const dashboardBody = document.getElementById('dashboardTasksTableBody');
         if (dashboardBody) {
-          dashboardBody.innerHTML = tasks.slice(0, 5).map(task => `
+          dashboardBody.innerHTML = tasks.slice(0, 3).map(task => `
             <tr class="hover:bg-slate-50">
-              <td class="px-6 py-4 font-semibold text-slate-900">${task.title}</td>
-              <td class="px-6 py-4 text-slate-600">${task.customerId || '-'}</td>
-              <td class="px-6 py-4">
-                <span class="px-3 py-1 rounded-full text-sm font-semibold ${
+              <td class="px-3 md:px-6 py-3 md:py-4 font-semibold text-slate-900 text-sm">${task.title}</td>
+              <td class="px-3 md:px-6 py-3 md:py-4 text-sm">
+                <span class="px-2 py-1 rounded text-xs ${
                   task.status === 'done' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
                 }">
-                  ${task.status === 'done' ? 'הושלם' : 'בטיפול'}
+                  ${task.status === 'done' ? 'הושלם' : 'פתוח'}
                 </span>
               </td>
-              <td class="px-6 py-4">
-                <span class="text-sm font-semibold ${
-                  task.priority === 'high' ? 'text-red-600' : task.priority === 'medium' ? 'text-yellow-600' : 'text-green-600'
-                }">
-                  ${task.priority === 'high' ? 'גבוהה' : task.priority === 'medium' ? 'בינונית' : 'נמוכה'}
-                </span>
+              <td class="px-3 md:px-6 py-3 md:py-4 text-sm text-xs font-semibold ${
+                task.priority === 'high' ? 'text-red-600' : task.priority === 'medium' ? 'text-yellow-600' : 'text-green-600'
+              }">
+                ${task.priority === 'high' ? 'גבוהה' : task.priority === 'medium' ? 'בינונית' : 'נמוכה'}
               </td>
             </tr>
           `).join('');
         }
       } catch (err) {
-        console.error('Error loading tasks:', err);
+        console.error('Error:', err);
       }
     }
 
     async function loadCustomers() {
       try {
-        const res = await fetch(`${API}/api/customers`);
+        const res = await fetch(`${API}/api/customers`, { headers: getAuthHeader() });
         const customers = await res.json();
         const tbody = document.getElementById('customersTableBody');
 
         if (!customers.length) {
-          tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-slate-500">אין לקוחות כרגע</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="3" class="px-3 md:px-6 py-4 text-center text-slate-500 text-sm">אין לקוחות</td></tr>';
           return;
         }
 
         tbody.innerHTML = customers.map(customer => `
           <tr class="hover:bg-slate-50">
-            <td class="px-6 py-4 font-semibold text-slate-900">${customer.name}</td>
-            <td class="px-6 py-4 text-slate-600">${customer.email || '-'}</td>
-            <td class="px-6 py-4 text-slate-600">${customer.phone || '-'}</td>
-            <td class="px-6 py-4 text-slate-600">${new Date(customer.createdAt).toLocaleDateString('he-IL')}</td>
+            <td class="px-3 md:px-6 py-3 md:py-4 font-semibold text-slate-900 text-sm">${customer.name}</td>
+            <td class="px-3 md:px-6 py-3 md:py-4 text-slate-600 text-sm hidden md:table-cell">${customer.email || '-'}</td>
+            <td class="px-3 md:px-6 py-3 md:py-4 text-slate-600 text-sm hidden md:table-cell">${customer.phone || '-'}</td>
           </tr>
         `).join('');
       } catch (err) {
-        console.error('Error loading customers:', err);
+        console.error('Error:', err);
       }
     }
 
-    function openTaskModal() {
-      document.getElementById('taskModal').classList.remove('hidden');
-    }
-
-    function closeTaskModal() {
-      document.getElementById('taskModal').classList.add('hidden');
-    }
-
-    function openCustomerModal() {
-      document.getElementById('customerModal').classList.remove('hidden');
-    }
-
-    function closeCustomerModal() {
-      document.getElementById('customerModal').classList.add('hidden');
-    }
+    function openTaskModal() { document.getElementById('taskModal').classList.remove('hidden'); }
+    function closeTaskModal() { document.getElementById('taskModal').classList.add('hidden'); }
+    function openCustomerModal() { document.getElementById('customerModal').classList.remove('hidden'); }
+    function closeCustomerModal() { document.getElementById('customerModal').classList.add('hidden'); }
 
     document.getElementById('taskForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       try {
         const res = await fetch(`${API}/api/tasks`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
           body: JSON.stringify({
             title: document.getElementById('taskTitle').value,
             description: document.getElementById('taskDescription').value,
@@ -526,7 +495,7 @@
           loadStats();
         }
       } catch (err) {
-        console.error('Error adding task:', err);
+        console.error('Error:', err);
       }
     });
 
@@ -535,7 +504,7 @@
       try {
         const res = await fetch(`${API}/api/customers`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
           body: JSON.stringify({
             name: document.getElementById('customerName').value,
             email: document.getElementById('customerEmail').value,
@@ -549,17 +518,20 @@
           loadStats();
         }
       } catch (err) {
-        console.error('Error adding customer:', err);
+        console.error('Error:', err);
       }
     });
 
+    checkAuth();
     loadStats();
     loadTasks();
     loadCustomers();
 
     setInterval(() => {
       loadStats();
-    }, 5000);
+      loadTasks();
+      loadCustomers();
+    }, 10000);
   </script>
 </body>
 </html>
