@@ -545,6 +545,10 @@ app.get('/', (req, res) => {
   `);
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ 10dots CRM API running on http://localhost:${PORT}`);
-});
+module.exports = app;
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`✅ 10dots CRM API running on http://localhost:${PORT}`);
+  });
+}

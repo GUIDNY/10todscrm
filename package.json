@@ -4,8 +4,8 @@
   "description": "CRM system with Telegram bot integration",
   "main": "index.js",
   "scripts": {
-    "start": "node api/index.js",
-    "dev": "node api/index.js",
+    "start": "node index.js",
+    "dev": "node index.js",
     "bot": "node bot/telegram.js",
     "build": "echo 'Build complete'"
   },
