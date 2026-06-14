@@ -11,10 +11,5 @@
       "source": "/:path*",
       "destination": "/"
     }
-  ],
-  "env": {
-    "TELEGRAM_TOKEN": "@TELEGRAM_TOKEN",
-    "NODE_ENV": "production",
-    "PORT": "3000"
-  }
+  ]
 }
