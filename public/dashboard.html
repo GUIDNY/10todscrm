@@ -4,278 +4,645 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>10dots CRM</title>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Hanken Grotesk', sans-serif; }
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .material-symbols-outlined.filled {
-      font-variation-settings: 'FILL' 1;
-    }
-    .soft-shadow { box-shadow: 0 12px 24px -6px rgba(26, 35, 126, 0.06); }
-    .soft-shadow-hover:hover { box-shadow: 0 20px 32px -8px rgba(26, 35, 126, 0.1); }
-    .nav-link.active { @apply bg-blue-100 text-blue-600; }
-    .page { display: none; }
-    .page.active { display: block; }
 
-    /* Mobile-first design */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+      background: #F7F7F8;
+      color: #111111;
+      line-height: 1.5;
+    }
+
+    /* Color System */
+    :root {
+      --color-bg: #FFFFFF;
+      --color-bg-secondary: #F7F7F8;
+      --color-border: #E5E5E5;
+      --color-text: #111111;
+      --color-text-secondary: #666666;
+      --color-accent: #111111;
+      --color-success: #10B981;
+      --color-warning: #F59E0B;
+      --color-danger: #EF4444;
+
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --space-8: 32px;
+    }
+
+    /* Typography Scale */
+    .text-xs { font-size: 12px; }
+    .text-sm { font-size: 14px; }
+    .text-base { font-size: 16px; }
+    .text-lg { font-size: 20px; }
+    .text-xl { font-size: 24px; }
+    .text-2xl { font-size: 32px; }
+
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+
+    /* Layout */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-6);
+    }
+
+    /* Desktop Sidebar */
+    .desktop-sidebar {
+      display: none;
+    }
+
     @media (min-width: 768px) {
-      .mobile-sidebar { display: none !important; }
-      .desktop-sidebar { display: flex !important; }
-      main { @apply mr-64; }
+      .desktop-sidebar {
+        display: flex;
+        width: 280px;
+        height: 100vh;
+        position: fixed;
+        right: 0;
+        top: 0;
+        flex-direction: column;
+        background: var(--color-bg);
+        border-left: 1px solid var(--color-border);
+        padding: var(--space-6);
+        z-index: 1000;
+      }
+
+      main {
+        margin-right: 280px;
+      }
+
+      .mobile-nav {
+        display: none !important;
+      }
     }
 
-    @media (max-width: 767px) {
-      .desktop-sidebar { display: none !important; }
-      main { @apply mb-20; }
+    /* Sidebar Content */
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-8);
+      padding-bottom: var(--space-6);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .sidebar-logo-icon {
+      width: 40px;
+      height: 40px;
+      background: #111111;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    .sidebar-logo-text h1 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .sidebar-logo-text p {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+
+    /* Navigation */
+    nav {
+      flex: 1;
+    }
+
+    nav a {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-2);
+      border-radius: 6px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 150ms ease;
+      cursor: pointer;
+    }
+
+    nav a:hover {
+      background: var(--color-bg-secondary);
+      color: var(--color-text);
+    }
+
+    nav a.active {
+      background: #111111;
+      color: white;
+    }
+
+    /* Mobile Bottom Nav */
+    .mobile-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: var(--color-bg);
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-around;
+      padding-bottom: 16px;
+      z-index: 999;
+    }
+
+    .mobile-nav button {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: var(--color-text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      padding: var(--space-3);
+      transition: color 150ms ease;
+    }
+
+    .mobile-nav button.active {
+      color: #111111;
+    }
+
+    .mobile-nav button:active {
+      color: #111111;
+    }
+
+    main {
+      padding-bottom: 100px;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: var(--space-8);
+    }
+
+    header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+    }
+
+    header p {
+      color: var(--color-text-secondary);
+      font-size: 16px;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+    }
+
+    .kpi-card {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: var(--space-6);
+      transition: all 150ms ease;
+    }
+
+    .kpi-card:hover {
+      border-color: #111111;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .kpi-value {
+      font-size: 40px;
+      font-weight: 700;
+      margin: var(--space-4) 0 var(--space-3) 0;
+      color: #111111;
+    }
+
+    .kpi-label {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      font-weight: 500;
+    }
+
+    /* Section */
+    .section {
+      background: var(--color-bg);
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      margin-bottom: var(--space-8);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: var(--space-6);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .section-header p {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Button */
+    button {
+      padding: 10px 16px;
+      background: #111111;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    button:hover {
+      background: #333333;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead {
+      background: var(--color-bg-secondary);
+    }
+
+    th {
+      padding: var(--space-4);
+      text-align: right;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    td {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    tbody tr:hover {
+      background: var(--color-bg-secondary);
+    }
+
+    /* Empty State */
+    .empty-state {
+      padding: var(--space-8);
+      text-align: center;
+      color: var(--color-text-secondary);
+    }
+
+    .empty-state p {
+      margin-bottom: var(--space-6);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      align-items: flex-end;
+    }
+
+    @media (min-width: 768px) {
+      .modal {
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--color-bg);
+      border-radius: 12px 12px 0 0;
+      padding: var(--space-6);
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    @media (min-width: 768px) {
+      .modal-content {
+        border-radius: 12px;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-6);
+    }
+
+    .modal-header h3 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--color-text-secondary);
+      padding: 0;
+    }
+
+    /* Form */
+    .form-group {
+      margin-bottom: var(--space-6);
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+      color: var(--color-text);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 150ms ease;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #111111;
+      box-shadow: 0 0 0 3px rgba(17,17,17,0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* Status Badge */
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-open {
+      background: #DBEAFE;
+      color: #1E40AF;
+    }
+
+    .badge-done {
+      background: #DCFCE7;
+      color: #166534;
+    }
+
+    .badge-high {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+
+    .badge-medium {
+      background: #FEF3C7;
+      color: #92400E;
+    }
+
+    .badge-low {
+      background: #E0E7FF;
+      color: #312E81;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      color: var(--color-text-secondary);
+      padding: var(--space-8);
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body>
   <!-- Desktop Sidebar -->
-  <aside class="desktop-sidebar hidden w-64 h-screen fixed right-0 top-0 bg-white border-l border-slate-200 p-6 flex flex-col">
-    <div class="mb-8 flex items-center gap-3">
-      <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-        <span class="material-symbols-outlined filled">grid_view</span>
-      </div>
-      <div>
-        <h1 class="font-bold text-xl text-blue-600">10dots CRM</h1>
-        <p class="text-xs text-slate-500">מערכת ניהול</p>
+  <aside class="desktop-sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">10</div>
+      <div class="sidebar-logo-text">
+        <h1>10dots</h1>
+        <p>מערכת ניהול</p>
       </div>
     </div>
 
-    <nav class="flex-1 space-y-2">
-      <button onclick="showPage('dashboard')" class="nav-link active w-full text-right flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-600 rounded-lg font-semibold">
-        <span class="material-symbols-outlined">dashboard</span>
-        <span>לוח בקרה</span>
-      </button>
-      <button onclick="showPage('customers')" class="nav-link w-full text-right flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-lg">
-        <span class="material-symbols-outlined">group</span>
-        <span>לקוחות</span>
-      </button>
-      <button onclick="showPage('tasks')" class="nav-link w-full text-right flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-lg">
-        <span class="material-symbols-outlined">assignment</span>
-        <span>משימות</span>
-      </button>
-      <button onclick="showPage('reports')" class="nav-link w-full text-right flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-lg">
-        <span class="material-symbols-outlined">bar_chart</span>
-        <span>דוחות</span>
-      </button>
+    <nav>
+      <a class="nav-link active" onclick="showPage('dashboard')">
+        📊 לוח בקרה
+      </a>
+      <a class="nav-link" onclick="showPage('customers')">
+        👥 לקוחות
+      </a>
+      <a class="nav-link" onclick="showPage('tasks')">
+        ✓ משימות
+      </a>
+      <a class="nav-link" onclick="showPage('reports')">
+        📈 דוחות
+      </a>
     </nav>
 
-    <div class="pt-4 border-t border-slate-200">
-      <button onclick="logout()" class="w-full text-right flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg font-semibold">
-        <span class="material-symbols-outlined">logout</span>
-        <span>התנתקות</span>
+    <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-6);">
+      <button onclick="logout()" style="width: 100%; background: #EF4444;">
+        התנתקות
       </button>
     </div>
   </aside>
 
-  <!-- Mobile Bottom Navigation -->
-  <nav class="mobile-sidebar fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around px-4 py-2 z-50 md:hidden">
-    <button onclick="showPage('dashboard')" class="nav-link active flex flex-col items-center gap-1 px-4 py-3 text-xs rounded-lg flex-1">
-      <span class="material-symbols-outlined">dashboard</span>
-      <span>בקרה</span>
-    </button>
-    <button onclick="showPage('customers')" class="nav-link flex flex-col items-center gap-1 px-4 py-3 text-xs rounded-lg flex-1">
-      <span class="material-symbols-outlined">group</span>
-      <span>לקוחות</span>
-    </button>
-    <button onclick="showPage('tasks')" class="nav-link flex flex-col items-center gap-1 px-4 py-3 text-xs rounded-lg flex-1">
-      <span class="material-symbols-outlined">assignment</span>
-      <span>משימות</span>
-    </button>
-    <button onclick="showPage('reports')" class="nav-link flex flex-col items-center gap-1 px-4 py-3 text-xs rounded-lg flex-1">
-      <span class="material-symbols-outlined">bar_chart</span>
-      <span>דוחות</span>
-    </button>
-    <button onclick="logout()" class="flex flex-col items-center gap-1 px-4 py-3 text-xs text-red-600 rounded-lg flex-1">
-      <span class="material-symbols-outlined">logout</span>
-      <span>יציאה</span>
-    </button>
+  <!-- Mobile Bottom Nav -->
+  <nav class="mobile-nav">
+    <button class="nav-mobile active" onclick="showPage('dashboard')">📊<br>בקרה</button>
+    <button class="nav-mobile" onclick="showPage('customers')">👥<br>לקוחות</button>
+    <button class="nav-mobile" onclick="showPage('tasks')">✓<br>משימות</button>
+    <button class="nav-mobile" onclick="showPage('reports')">📈<br>דוחות</button>
   </nav>
 
-  <!-- Main Content -->
-  <main class="min-h-screen p-4 md:p-8">
-    <!-- Top Bar for Mobile -->
-    <div class="md:hidden mb-6 flex justify-between items-center">
-      <button onclick="logout()" class="text-red-600">
-        <span class="material-symbols-outlined">logout</span>
-      </button>
-      <h1 class="font-bold text-xl text-blue-600">10dots CRM</h1>
-      <div id="userInitial" class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-600 font-bold"></div>
-    </div>
+  <main>
+    <div class="container">
+      <!-- DASHBOARD PAGE -->
+      <div id="dashboard" class="page">
+        <header>
+          <h1>👋 שלום!</h1>
+          <p>ברוכים הבאים ל-10dots CRM</p>
+        </header>
 
-    <!-- DASHBOARD PAGE -->
-    <div id="dashboard" class="page active">
-      <header class="mb-6 md:mb-8">
-        <h2 class="text-2xl md:text-3xl font-bold text-blue-900 mb-2">שלום!</h2>
-        <p class="text-slate-600 text-sm md:text-base">ברוך הבא ל-10dots CRM</p>
-      </header>
-
-      <!-- KPI Cards -->
-      <section class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
-        <div class="bg-white p-4 md:p-6 rounded-xl soft-shadow border border-slate-200">
-          <div class="text-3xl md:text-4xl font-bold text-blue-600 mb-2" id="kpiCustomers">0</div>
-          <p class="text-xs md:text-sm text-slate-600">לקוחות</p>
-        </div>
-
-        <div class="bg-white p-4 md:p-6 rounded-xl soft-shadow border border-slate-200">
-          <div class="text-3xl md:text-4xl font-bold text-green-600 mb-2" id="kpiDone">0</div>
-          <p class="text-xs md:text-sm text-slate-600">הושלמו</p>
-        </div>
-
-        <div class="bg-white p-4 md:p-6 rounded-xl soft-shadow border border-slate-200">
-          <div class="text-3xl md:text-4xl font-bold text-orange-600 mb-2" id="kpiOpen">0</div>
-          <p class="text-xs md:text-sm text-slate-600">פתוחות</p>
-        </div>
-
-        <div class="bg-white p-4 md:p-6 rounded-xl soft-shadow border border-slate-200">
-          <div class="text-3xl md:text-4xl font-bold text-purple-600 mb-2" id="kpiTotal">0</div>
-          <p class="text-xs md:text-sm text-slate-600">משימות</p>
-        </div>
-      </section>
-
-      <!-- Tasks Table -->
-      <section class="bg-white rounded-xl soft-shadow border border-slate-200 overflow-hidden">
-        <div class="p-4 md:p-6 border-b border-slate-200 flex justify-between items-center">
-          <div>
-            <h3 class="text-lg font-bold text-blue-900">משימות אחרונות</h3>
+        <!-- KPI Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">סה״כ לקוחות</div>
+            <div class="kpi-value" id="kpiCustomers">0</div>
           </div>
-          <button onclick="openTaskModal()" class="bg-blue-600 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg font-semibold hover:bg-blue-700 text-sm md:text-base flex items-center gap-1">
-            <span class="material-symbols-outlined text-base">add</span>
-            <span class="hidden md:inline">משימה</span>
-          </button>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-right text-sm md:text-base">
-            <thead class="bg-slate-50">
-              <tr>
-                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">משימה</th>
-                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">סטטוס</th>
-                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">עדיפות</th>
-              </tr>
-            </thead>
-            <tbody id="dashboardTasksTableBody" class="divide-y divide-slate-200">
-              <tr>
-                <td colspan="3" class="px-3 md:px-6 py-4 text-center text-slate-500 text-sm">טוען...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-
-    <!-- CUSTOMERS PAGE -->
-    <div id="customers" class="page">
-      <header class="mb-6">
-        <h2 class="text-2xl md:text-3xl font-bold text-blue-900 mb-2">לקוחות</h2>
-      </header>
-
-      <section class="bg-white rounded-xl soft-shadow border border-slate-200 overflow-hidden">
-        <div class="p-4 md:p-6 border-b border-slate-200 flex justify-between items-center">
-          <h3 class="text-lg font-bold text-blue-900">רשימת לקוחות</h3>
-          <button onclick="openCustomerModal()" class="bg-blue-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-blue-700 text-sm flex items-center gap-1">
-            <span class="material-symbols-outlined text-base">add</span>
-            <span class="hidden md:inline">לקוח</span>
-          </button>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-right text-sm">
-            <thead class="bg-slate-50">
-              <tr>
-                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">שם</th>
-                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600 hidden md:table-cell">דוא"ל</th>
-                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600 hidden md:table-cell">טלפון</th>
-              </tr>
-            </thead>
-            <tbody id="customersTableBody" class="divide-y divide-slate-200">
-              <tr>
-                <td colspan="3" class="px-3 md:px-6 py-4 text-center text-slate-500 text-sm">טוען...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-
-    <!-- TASKS PAGE -->
-    <div id="tasks" class="page">
-      <header class="mb-6">
-        <h2 class="text-2xl md:text-3xl font-bold text-blue-900 mb-2">משימות</h2>
-      </header>
-
-      <section class="bg-white rounded-xl soft-shadow border border-slate-200 overflow-hidden">
-        <div class="p-4 md:p-6 border-b border-slate-200 flex justify-between items-center">
-          <h3 class="text-lg font-bold text-blue-900">רשימת משימות</h3>
-          <button onclick="openTaskModal()" class="bg-blue-600 text-white px-3 py-2 rounded-lg font-semibold hover:bg-blue-700 text-sm flex items-center gap-1">
-            <span class="material-symbols-outlined text-base">add</span>
-            <span class="hidden md:inline">משימה</span>
-          </button>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-right text-sm">
-            <thead class="bg-slate-50">
-              <tr>
-                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">משימה</th>
-                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">סטטוס</th>
-                <th class="px-3 md:px-6 py-3 text-xs md:text-sm font-bold text-slate-600">עדיפות</th>
-              </tr>
-            </thead>
-            <tbody id="tasksTableBody" class="divide-y divide-slate-200">
-              <tr>
-                <td colspan="3" class="px-3 md:px-6 py-4 text-center text-slate-500 text-sm">טוען...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-
-    <!-- REPORTS PAGE -->
-    <div id="reports" class="page">
-      <header class="mb-6">
-        <h2 class="text-2xl md:text-3xl font-bold text-blue-900 mb-2">דוחות</h2>
-      </header>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        <div class="bg-white p-4 md:p-6 rounded-xl soft-shadow border border-slate-200">
-          <h3 class="text-lg font-bold text-blue-900 mb-4">סטטיסטיקות</h3>
-          <div class="space-y-3">
-            <div class="flex justify-between items-center pb-3 border-b">
-              <span class="text-slate-600">לקוחות</span>
-              <span class="text-2xl font-bold text-blue-600" id="reportCustomers">0</span>
-            </div>
-            <div class="flex justify-between items-center pb-3 border-b">
-              <span class="text-slate-600">משימות כוללות</span>
-              <span class="text-2xl font-bold text-blue-600" id="reportTasks">0</span>
-            </div>
-            <div class="flex justify-between items-center pb-3 border-b">
-              <span class="text-slate-600">פתוחות</span>
-              <span class="text-2xl font-bold text-orange-600" id="reportOpen">0</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-slate-600">הושלמו</span>
-              <span class="text-2xl font-bold text-green-600" id="reportDone">0</span>
-            </div>
+          <div class="kpi-card">
+            <div class="kpi-label">משימות כוללות</div>
+            <div class="kpi-value" id="kpiTotal">0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">משימות פתוחות</div>
+            <div class="kpi-value" id="kpiOpen">0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">משימות בוצעו</div>
+            <div class="kpi-value" id="kpiDone">0</div>
           </div>
         </div>
 
-        <div class="bg-white p-4 md:p-6 rounded-xl soft-shadow border border-slate-200">
-          <h3 class="text-lg font-bold text-blue-900 mb-4">יעילות</h3>
-          <div class="space-y-4">
+        <!-- Tasks Section -->
+        <div class="section">
+          <div class="section-header">
             <div>
-              <div class="flex justify-between mb-2">
-                <span class="text-slate-600">אחוז השלמה</span>
-                <span class="font-bold" id="completionRate">0%</span>
-              </div>
-              <div class="w-full bg-slate-200 rounded-full h-2">
-                <div id="completionBar" class="bg-green-600 h-2 rounded-full" style="width: 0%"></div>
-              </div>
+              <h2>משימות אחרונות</h2>
+              <p>5 המשימות האחרונות</p>
             </div>
+            <button onclick="openTaskModal()">+ משימה</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>משימה</th>
+                  <th>סטטוס</th>
+                  <th>עדיפות</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardTasks">
+                <tr><td colspan="3" class="loading">טוען...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUSTOMERS PAGE -->
+      <div id="customers" class="page" style="display: none;">
+        <header>
+          <h1>👥 לקוחות</h1>
+          <p>ניהול לקוחות</p>
+        </header>
+
+        <div class="section">
+          <div class="section-header">
+            <div>
+              <h2>רשימת לקוחות</h2>
+              <p>כל הלקוחות שלך</p>
+            </div>
+            <button onclick="openCustomerModal()">+ לקוח</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>שם</th>
+                  <th>דוא״ל</th>
+                  <th>טלפון</th>
+                </tr>
+              </thead>
+              <tbody id="customersList">
+                <tr><td colspan="3" class="loading">טוען...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TASKS PAGE -->
+      <div id="tasks" class="page" style="display: none;">
+        <header>
+          <h1>✓ משימות</h1>
+          <p>כל המשימות שלך</p>
+        </header>
+
+        <div class="section">
+          <div class="section-header">
+            <div>
+              <h2>רשימת משימות</h2>
+              <p>משימות פעילות</p>
+            </div>
+            <button onclick="openTaskModal()">+ משימה</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>משימה</th>
+                  <th>סטטוס</th>
+                  <th>עדיפות</th>
+                </tr>
+              </thead>
+              <tbody id="tasksList">
+                <tr><td colspan="3" class="loading">טוען...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS PAGE -->
+      <div id="reports" class="page" style="display: none;">
+        <header>
+          <h1>📈 דוחות</h1>
+          <p>סטטיסטיקות ותחזוקות</p>
+        </header>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">אחוז השלמה</div>
+            <div class="kpi-value" id="completionRate">0%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">משימות זקוקות לעדכון</div>
+            <div class="kpi-value" id="pendingCount">0</div>
           </div>
         </div>
       </div>
@@ -283,37 +650,55 @@
   </main>
 
   <!-- Task Modal -->
-  <div id="taskModal" class="hidden fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-40">
-    <div class="bg-white rounded-t-2xl md:rounded-2xl p-6 max-w-md w-full mx-auto md:mx-0 md:max-h-[90vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold mb-6 text-blue-900">משימה חדשה</h3>
-      <form id="taskForm" class="space-y-4">
-        <input type="text" id="taskTitle" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="כותרת המשימה" required>
-        <textarea id="taskDescription" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows="3" placeholder="תיאור"></textarea>
-        <select id="taskPriority" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-          <option value="low">עדיפות נמוכה</option>
-          <option value="medium" selected>בינונית</option>
-          <option value="high">גבוהה</option>
-        </select>
-        <div class="flex gap-3 pt-4">
-          <button type="submit" class="flex-1 bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700">הוסף</button>
-          <button type="button" onclick="closeTaskModal()" class="flex-1 bg-slate-200 text-slate-900 font-semibold py-3 rounded-lg">ביטול</button>
+  <div id="taskModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>משימה חדשה</h3>
+        <button class="modal-close" onclick="closeTaskModal()">×</button>
+      </div>
+      <form id="taskForm">
+        <div class="form-group">
+          <label>כותרת</label>
+          <input type="text" id="taskTitle" placeholder="משימה..." required>
         </div>
+        <div class="form-group">
+          <label>תיאור</label>
+          <textarea id="taskDescription" placeholder="פרטים..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>עדיפות</label>
+          <select id="taskPriority" style="width: 100%; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-border); border-radius: 6px;">
+            <option value="low">נמוכה</option>
+            <option value="medium" selected>בינונית</option>
+            <option value="high">גבוהה</option>
+          </select>
+        </div>
+        <button type="submit" style="width: 100%;">הוסף משימה</button>
       </form>
     </div>
   </div>
 
   <!-- Customer Modal -->
-  <div id="customerModal" class="hidden fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-40">
-    <div class="bg-white rounded-t-2xl md:rounded-2xl p-6 max-w-md w-full mx-auto md:mx-0 md:max-h-[90vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold mb-6 text-blue-900">לקוח חדש</h3>
-      <form id="customerForm" class="space-y-4">
-        <input type="text" id="customerName" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="שם הלקוח" required>
-        <input type="email" id="customerEmail" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="דוא"ל">
-        <input type="tel" id="customerPhone" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="טלפון">
-        <div class="flex gap-3 pt-4">
-          <button type="submit" class="flex-1 bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700">הוסף</button>
-          <button type="button" onclick="closeCustomerModal()" class="flex-1 bg-slate-200 text-slate-900 font-semibold py-3 rounded-lg">ביטול</button>
+  <div id="customerModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>לקוח חדש</h3>
+        <button class="modal-close" onclick="closeCustomerModal()">×</button>
+      </div>
+      <form id="customerForm">
+        <div class="form-group">
+          <label>שם</label>
+          <input type="text" id="customerName" placeholder="שם הלקוח..." required>
         </div>
+        <div class="form-group">
+          <label>דוא״ל</label>
+          <input type="email" id="customerEmail" placeholder="email@example.com">
+        </div>
+        <div class="form-group">
+          <label>טלפון</label>
+          <input type="tel" id="customerPhone" placeholder="05X-XXXXXXX">
+        </div>
+        <button type="submit" style="width: 100%;">הוסף לקוח</button>
       </form>
     </div>
   </div>
@@ -321,26 +706,17 @@
   <script>
     const API = '';
 
-    // Check authentication
     function checkAuth() {
       const token = localStorage.getItem('token');
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-
       if (!token) {
         window.location.href = '/login.html';
-        return;
       }
-
-      const initial = user.name ? user.name.charAt(0).toUpperCase() : '?';
-      document.getElementById('userInitial').textContent = initial;
     }
 
     function logout() {
-      if (confirm('האם אתה בטוח שאתה רוצה להתנתק?')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login.html';
-      }
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login.html';
     }
 
     function getAuthHeader() {
@@ -348,18 +724,16 @@
     }
 
     function showPage(pageName) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(pageName).classList.add('active');
+      document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+      document.getElementById(pageName).style.display = 'block';
 
-      document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-      event.target.closest('.nav-link').classList.add('active');
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      document.querySelectorAll('.nav-mobile').forEach(l => l.classList.remove('active'));
+      document.querySelector(`[onclick*="'${pageName}'"]`).classList.add('active');
 
       if (pageName === 'customers') loadCustomers();
       if (pageName === 'tasks') loadTasks();
-      if (pageName === 'reports') {
-        loadStats();
-        updateReports();
-      }
+      if (pageName === 'reports') updateReports();
     }
 
     async function loadStats() {
@@ -367,79 +741,40 @@
         const res = await fetch(`${API}/api/stats`, { headers: getAuthHeader() });
         const stats = await res.json();
         document.getElementById('kpiCustomers').textContent = stats.totalCustomers;
-        document.getElementById('kpiDone').textContent = stats.doneTasks;
-        document.getElementById('kpiOpen').textContent = stats.openTasks;
         document.getElementById('kpiTotal').textContent = stats.totalTasks;
-        document.getElementById('reportCustomers').textContent = stats.totalCustomers;
-        document.getElementById('reportTasks').textContent = stats.totalTasks;
-        document.getElementById('reportOpen').textContent = stats.openTasks;
-        document.getElementById('reportDone').textContent = stats.doneTasks;
+        document.getElementById('kpiOpen').textContent = stats.openTasks;
+        document.getElementById('kpiDone').textContent = stats.doneTasks;
       } catch (err) {
         console.error('Error:', err);
       }
     }
 
-    function updateReports() {
-      fetch(`${API}/api/stats`, { headers: getAuthHeader() })
-        .then(r => r.json())
-        .then(stats => {
-          const total = stats.totalTasks;
-          const done = stats.doneTasks;
-          const rate = total > 0 ? Math.round((done / total) * 100) : 0;
-          document.getElementById('completionRate').textContent = rate + '%';
-          document.getElementById('completionBar').style.width = rate + '%';
-        })
-        .catch(err => console.error('Error:', err));
-    }
-
     async function loadTasks() {
       try {
         const res = await fetch(`${API}/api/tasks`, { headers: getAuthHeader() });
-        const tasks = await res.json();
-        const tbody = document.getElementById('tasksTableBody');
+        const tasksList = await res.json();
+        const tbody = document.getElementById('tasksList');
 
-        if (!tasks.length) {
-          tbody.innerHTML = '<tr><td colspan="3" class="px-3 md:px-6 py-4 text-center text-slate-500 text-sm">אין משימות</td></tr>';
+        if (!tasksList.length) {
+          tbody.innerHTML = '<tr><td colspan="3" class="empty-state">אין משימות כרגע</td></tr>';
           return;
         }
 
-        tbody.innerHTML = tasks.map(task => `
-          <tr class="hover:bg-slate-50">
-            <td class="px-3 md:px-6 py-3 md:py-4 font-semibold text-slate-900 text-sm">${task.title}</td>
-            <td class="px-3 md:px-6 py-3 md:py-4 text-sm">
-              <span class="px-2 py-1 rounded text-xs ${
-                task.status === 'done' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
-              }">
-                ${task.status === 'done' ? 'הושלם' : 'פתוח'}
-              </span>
-            </td>
-            <td class="px-3 md:px-6 py-3 md:py-4 text-sm">
-              <span class="text-xs font-semibold ${
-                task.priority === 'high' ? 'text-red-600' : task.priority === 'medium' ? 'text-yellow-600' : 'text-green-600'
-              }">
-                ${task.priority === 'high' ? 'גבוהה' : task.priority === 'medium' ? 'בינונית' : 'נמוכה'}
-              </span>
-            </td>
+        tbody.innerHTML = tasksList.map(task => `
+          <tr>
+            <td>${task.title}</td>
+            <td><span class="badge badge-${task.status}">${task.status === 'done' ? 'בוצעה' : 'פתוחה'}</span></td>
+            <td><span class="badge badge-${task.priority}">${task.priority === 'high' ? 'גבוהה' : task.priority === 'medium' ? 'בינונית' : 'נמוכה'}</span></td>
           </tr>
         `).join('');
 
-        const dashboardBody = document.getElementById('dashboardTasksTableBody');
+        const dashboardBody = document.getElementById('dashboardTasks');
         if (dashboardBody) {
-          dashboardBody.innerHTML = tasks.slice(0, 3).map(task => `
-            <tr class="hover:bg-slate-50">
-              <td class="px-3 md:px-6 py-3 md:py-4 font-semibold text-slate-900 text-sm">${task.title}</td>
-              <td class="px-3 md:px-6 py-3 md:py-4 text-sm">
-                <span class="px-2 py-1 rounded text-xs ${
-                  task.status === 'done' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
-                }">
-                  ${task.status === 'done' ? 'הושלם' : 'פתוח'}
-                </span>
-              </td>
-              <td class="px-3 md:px-6 py-3 md:py-4 text-sm text-xs font-semibold ${
-                task.priority === 'high' ? 'text-red-600' : task.priority === 'medium' ? 'text-yellow-600' : 'text-green-600'
-              }">
-                ${task.priority === 'high' ? 'גבוהה' : task.priority === 'medium' ? 'בינונית' : 'נמוכה'}
-              </td>
+          dashboardBody.innerHTML = tasksList.slice(0, 5).map(task => `
+            <tr>
+              <td>${task.title}</td>
+              <td><span class="badge badge-${task.status}">${task.status === 'done' ? 'בוצעה' : 'פתוחה'}</span></td>
+              <td><span class="badge badge-${task.priority}">${task.priority === 'high' ? 'גבוהה' : task.priority === 'medium' ? 'בינונית' : 'נמוכה'}</span></td>
             </tr>
           `).join('');
         }
@@ -451,19 +786,19 @@
     async function loadCustomers() {
       try {
         const res = await fetch(`${API}/api/customers`, { headers: getAuthHeader() });
-        const customers = await res.json();
-        const tbody = document.getElementById('customersTableBody');
+        const customersList = await res.json();
+        const tbody = document.getElementById('customersList');
 
-        if (!customers.length) {
-          tbody.innerHTML = '<tr><td colspan="3" class="px-3 md:px-6 py-4 text-center text-slate-500 text-sm">אין לקוחות</td></tr>';
+        if (!customersList.length) {
+          tbody.innerHTML = '<tr><td colspan="3" class="empty-state">אין לקוחות כרגע</td></tr>';
           return;
         }
 
-        tbody.innerHTML = customers.map(customer => `
-          <tr class="hover:bg-slate-50">
-            <td class="px-3 md:px-6 py-3 md:py-4 font-semibold text-slate-900 text-sm">${customer.name}</td>
-            <td class="px-3 md:px-6 py-3 md:py-4 text-slate-600 text-sm hidden md:table-cell">${customer.email || '-'}</td>
-            <td class="px-3 md:px-6 py-3 md:py-4 text-slate-600 text-sm hidden md:table-cell">${customer.phone || '-'}</td>
+        tbody.innerHTML = customersList.map(customer => `
+          <tr>
+            <td>${customer.name}</td>
+            <td>${customer.email || '-'}</td>
+            <td>${customer.phone || '-'}</td>
           </tr>
         `).join('');
       } catch (err) {
@@ -471,10 +806,31 @@
       }
     }
 
-    function openTaskModal() { document.getElementById('taskModal').classList.remove('hidden'); }
-    function closeTaskModal() { document.getElementById('taskModal').classList.add('hidden'); }
-    function openCustomerModal() { document.getElementById('customerModal').classList.remove('hidden'); }
-    function closeCustomerModal() { document.getElementById('customerModal').classList.add('hidden'); }
+    function updateReports() {
+      fetch(`${API}/api/stats`, { headers: getAuthHeader() })
+        .then(r => r.json())
+        .then(stats => {
+          const rate = stats.totalTasks > 0 ? Math.round((stats.doneTasks / stats.totalTasks) * 100) : 0;
+          document.getElementById('completionRate').textContent = rate + '%';
+          document.getElementById('pendingCount').textContent = stats.openTasks;
+        });
+    }
+
+    function openTaskModal() {
+      document.getElementById('taskModal').classList.add('active');
+    }
+
+    function closeTaskModal() {
+      document.getElementById('taskModal').classList.remove('active');
+    }
+
+    function openCustomerModal() {
+      document.getElementById('customerModal').classList.add('active');
+    }
+
+    function closeCustomerModal() {
+      document.getElementById('customerModal').classList.remove('active');
+    }
 
     document.getElementById('taskForm').addEventListener('submit', async (e) => {
       e.preventDefault();
