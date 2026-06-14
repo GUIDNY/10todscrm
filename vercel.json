@@ -1,0 +1,20 @@
+{
+  "buildCommand": "npm install",
+  "outputDirectory": ".",
+  "framework": "express",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/"
+    }
+  ],
+  "env": {
+    "TELEGRAM_TOKEN": "@TELEGRAM_TOKEN",
+    "NODE_ENV": "production",
+    "PORT": "3000"
+  }
+}

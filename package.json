@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node api/index.js",
     "dev": "node api/index.js",
-    "bot": "node bot/telegram.js"
+    "bot": "node bot/telegram.js",
+    "build": "echo 'Build complete'"
   },
   "dependencies": {
     "express": "^4.18.2",
