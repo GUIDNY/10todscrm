@@ -20,12 +20,20 @@ module.exports = (req, res) => {
   }
 
   if (req.method === 'POST') {
-    const { title, description, customerId, dueDate } = req.body;
-    if (!title) {
-      return res.status(400).json({ error: 'Title is required' });
+    try {
+      let body = req.body;
+      if (typeof body === 'string') {
+        body = JSON.parse(body);
+      }
+      const { title, description, customerId, dueDate } = body;
+      if (!title) {
+        return res.status(400).json({ error: 'Title is required' });
+      }
+      const newTask = tasks.add(title, description, customerId, dueDate);
+      return res.status(201).json(newTask);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
     }
-    const newTask = tasks.add(title, description, customerId, dueDate);
-    return res.status(201).json(newTask);
   }
 
   res.status(405).json({ error: 'Method not allowed' });

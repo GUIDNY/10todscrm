@@ -15,12 +15,20 @@ module.exports = (req, res) => {
   }
 
   if (req.method === 'POST') {
-    const { name, email, phone, notes } = req.body;
-    if (!name) {
-      return res.status(400).json({ error: 'Name is required' });
+    try {
+      let body = req.body;
+      if (typeof body === 'string') {
+        body = JSON.parse(body);
+      }
+      const { name, email, phone, notes } = body;
+      if (!name) {
+        return res.status(400).json({ error: 'Name is required' });
+      }
+      const newCustomer = customers.add(name, email, phone, notes);
+      return res.status(201).json(newCustomer);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
     }
-    const newCustomer = customers.add(name, email, phone, notes);
-    return res.status(201).json(newCustomer);
   }
 
   res.status(405).json({ error: 'Method not allowed' });
