@@ -1,6 +1,6 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
-const { tasks, customers, users } = require('../db/mongodb-storage');
+const { query, initDB } = require('../db/postgres-storage');
 
 const token = process.env.TELEGRAM_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
@@ -10,7 +10,6 @@ const helpText = `
 
 /add_task [משימה] - הוסף משימה חדשה
 /tasks - ראה את כל המשימות
-/done [מספר] - סימון משימה כבוצעה
 /add_customer [שם] - הוסף לקוח חדש
 /customers - ראה את כל הלקוחות
 /help - הצג עזרה
@@ -20,112 +19,127 @@ const helpText = `
 /add_customer שם הלקוח
 `;
 
-bot.onText(/\/start/, (msg) => {
-  const chatId = msg.chat.id;
-  users.addOrUpdate(msg.from.id, {
-    username: msg.from.username || 'unknown',
-    firstName: msg.from.first_name,
-    chatId: chatId
-  });
+// Get user ID from Telegram user info
+function getUserId(telegramUser) {
+  return telegramUser.id.toString();
+}
 
-  bot.sendMessage(chatId, `
+bot.onText(/\/start/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    await initDB();
+    bot.sendMessage(chatId, `
 שלום 👋 ${msg.from.first_name || 'משתמש'}!
 
 ברוכים הבאים ל-10dots CRM!
 
 זו מערכת ניהול משימות ולקוחות המחוברת לטלגרם.
 ${helpText}
-  `);
+    `);
+  } catch (err) {
+    console.error('Error in /start:', err);
+    bot.sendMessage(chatId, '❌ שגיאה בחיבור למערכת');
+  }
 });
 
 bot.onText(/\/help/, (msg) => {
   bot.sendMessage(msg.chat.id, helpText);
 });
 
-bot.onText(/\/add_task (.+)/, (msg, match) => {
+bot.onText(/\/add_task (.+)/, async (msg, match) => {
   const chatId = msg.chat.id;
   const title = match[1];
 
-  const newTask = tasks.add(title);
-  bot.sendMessage(chatId, `✅ משימה נוספה!\n\n📝 ${newTask.title}\nמזהה: ${newTask.id.substring(0, 8)}`);
-});
+  try {
+    await initDB();
+    const result = await query(
+      `INSERT INTO tasks (user_id, title, status, priority)
+       VALUES ($1, $2, $3, $4) RETURNING id, title`,
+      [getUserId(msg.from), title, 'open', 'medium']
+    );
 
-bot.onText(/\/tasks/, (msg) => {
-  const chatId = msg.chat.id;
-  const allTasks = tasks.getAll();
-
-  if (allTasks.length === 0) {
-    bot.sendMessage(chatId, 'אין משימות כרגע 📭');
-    return;
+    const task = result.rows[0];
+    bot.sendMessage(chatId, `✅ משימה נוספה!\n\n📝 ${task.title}\nמזהה: ${task.id.substring(0, 8)}`);
+  } catch (err) {
+    console.error('Error in /add_task:', err);
+    bot.sendMessage(chatId, '❌ שגיאה בהוספת משימה');
   }
-
-  let message = '📋 רשימת משימות:\n\n';
-  allTasks.forEach((task, index) => {
-    const status = task.status === 'done' ? '✅' : '🔵';
-    message += `${index + 1}. ${status} ${task.title}\n`;
-    if (task.description) message += `   📝 ${task.description}\n`;
-  });
-
-  message += '\n💡 הקלד /done [מספר] כדי לסמן משימה כבוצעה';
-  bot.sendMessage(chatId, message);
 });
 
-bot.onText(/\/done (\d+)/, (msg, match) => {
+bot.onText(/\/tasks/, async (msg) => {
   const chatId = msg.chat.id;
-  const taskIndex = parseInt(match[1]) - 1;
-  const allTasks = tasks.getAll();
 
-  if (taskIndex < 0 || taskIndex >= allTasks.length) {
-    bot.sendMessage(chatId, '❌ משימה לא נמצאה');
-    return;
+  try {
+    await initDB();
+    const result = await query(
+      'SELECT id, title, status, priority FROM tasks WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10',
+      [getUserId(msg.from)]
+    );
+
+    if (result.rows.length === 0) {
+      bot.sendMessage(chatId, '📭 אין משימות');
+      return;
+    }
+
+    const tasksList = result.rows.map((task, i) =>
+      `${i + 1}. ${task.title} (${task.status === 'done' ? '✅' : '⏳'})`
+    ).join('\n');
+
+    bot.sendMessage(chatId, `📋 המשימות שלך:\n\n${tasksList}`);
+  } catch (err) {
+    console.error('Error in /tasks:', err);
+    bot.sendMessage(chatId, '❌ שגיאה בטעינת משימות');
   }
-
-  const task = allTasks[taskIndex];
-  tasks.updateStatus(task.id, 'done');
-  bot.sendMessage(chatId, `✅ משימה סומנה כבוצעה: ${task.title}`);
 });
 
-bot.onText(/\/add_customer (.+)/, (msg, match) => {
+bot.onText(/\/add_customer (.+)/, async (msg, match) => {
   const chatId = msg.chat.id;
   const name = match[1];
 
-  const newCustomer = customers.add(name);
-  bot.sendMessage(chatId, `✅ לקוח נוסף!\n\n👤 ${newCustomer.name}`);
+  try {
+    await initDB();
+    const result = await query(
+      `INSERT INTO customers (user_id, name)
+       VALUES ($1, $2) RETURNING id, name`,
+      [getUserId(msg.from), name]
+    );
+
+    const customer = result.rows[0];
+    bot.sendMessage(chatId, `✅ לקוח נוסף!\n\n👤 ${customer.name}`);
+  } catch (err) {
+    console.error('Error in /add_customer:', err);
+    bot.sendMessage(chatId, '❌ שגיאה בהוספת לקוח');
+  }
 });
 
-bot.onText(/\/customers/, (msg) => {
+bot.onText(/\/customers/, async (msg) => {
   const chatId = msg.chat.id;
-  const allCustomers = customers.getAll();
 
-  if (allCustomers.length === 0) {
-    bot.sendMessage(chatId, 'אין לקוחות כרגע 📭');
-    return;
-  }
+  try {
+    await initDB();
+    const result = await query(
+      'SELECT id, name FROM customers WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10',
+      [getUserId(msg.from)]
+    );
 
-  let message = '👥 רשימת לקוחות:\n\n';
-  allCustomers.forEach((customer, index) => {
-    message += `${index + 1}. ${customer.name}\n`;
-    if (customer.email) message += `   📧 ${customer.email}\n`;
-    if (customer.phone) message += `   📱 ${customer.phone}\n`;
-  });
+    if (result.rows.length === 0) {
+      bot.sendMessage(chatId, '👥 אין לקוחות');
+      return;
+    }
 
-  bot.sendMessage(chatId, message);
-});
+    const customersList = result.rows.map((customer, i) =>
+      `${i + 1}. ${customer.name}`
+    ).join('\n');
 
-bot.on('message', (msg) => {
-  // Handle messages that don't match any pattern
-  if (msg.text && !msg.text.startsWith('/')) {
-    const chatId = msg.chat.id;
-    const userId = msg.from.id;
-
-    users.addOrUpdate(userId, {
-      username: msg.from.username || 'unknown',
-      firstName: msg.from.first_name,
-      lastMessage: msg.text,
-      chatId: chatId
-    });
+    bot.sendMessage(chatId, `👥 הלקוחות שלך:\n\n${customersList}`);
+  } catch (err) {
+    console.error('Error in /customers:', err);
+    bot.sendMessage(chatId, '❌ שגיאה בטעינת לקוחות');
   }
 });
 
-console.log('🤖 Telegram Bot started!');
-console.log('Bot is polling for messages...');
+bot.on('polling_error', (error) => {
+  console.error('Polling error:', error);
+});
+
+console.log('🤖 Telegram bot started...');
