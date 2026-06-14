@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const { User, Session } = require('./models');
 const crypto = require('crypto');
 
@@ -5,9 +6,30 @@ const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 };
 
+const ensureConnected = async () => {
+  if (mongoose.connection.readyState !== 1) {
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI not configured');
+    }
+    try {
+      await mongoose.connect(mongoUri, {
+        serverSelectionTimeoutMS: 30000,
+        socketTimeoutMS: 45000,
+        maxPoolSize: 10,
+        minPoolSize: 1,
+      });
+    } catch (error) {
+      console.error('MongoDB connection error:', error.message);
+      throw new Error('Database connection failed: ' + error.message);
+    }
+  }
+};
+
 const auth = {
   register: async (email, name, password) => {
     try {
+      await ensureConnected();
       const existingUser = await User.findOne({ email: email.toLowerCase() });
       if (existingUser) {
         throw new Error('User already exists');
@@ -28,6 +50,7 @@ const auth = {
 
   login: async (email, password) => {
     try {
+      await ensureConnected();
       const user = await User.findOne({ email: email.toLowerCase() });
       if (!user) {
         throw new Error('User not found');
@@ -59,6 +82,7 @@ const auth = {
 
   verify: async (token) => {
     try {
+      await ensureConnected();
       const session = await Session.findOne({ token });
       if (!session) {
         throw new Error('Invalid token');
@@ -86,6 +110,7 @@ const auth = {
 
   logout: async (token) => {
     try {
+      await ensureConnected();
       await Session.deleteOne({ token });
     } catch (error) {
       throw error;
