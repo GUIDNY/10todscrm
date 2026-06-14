@@ -122,7 +122,15 @@
           body: JSON.stringify(body)
         });
 
-        const data = await res.json();
+        let data;
+        try {
+          const text = await res.text();
+          data = JSON.parse(text);
+        } catch (parseError) {
+          console.error('Response:', res.status, res.statusText);
+          showError('שגיאה בשרת: ' + res.statusText);
+          return;
+        }
 
         if (!res.ok) {
           showError(data.error || 'שגיאה בתהליך');
