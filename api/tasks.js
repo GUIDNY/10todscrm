@@ -1,6 +1,6 @@
-const { tasks } = require('../db/storage');
+const { tasks } = require('../db/mongodb-storage');
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -10,13 +10,17 @@ module.exports = (req, res) => {
   }
 
   if (req.method === 'GET') {
-    const allTasks = tasks.getAll();
-    const status = req.query.status;
-    if (status) {
-      const filtered = allTasks.filter(t => t.status === status);
-      return res.status(200).json(filtered);
+    try {
+      const allTasks = await tasks.getAll();
+      const status = req.query.status;
+      if (status) {
+        const filtered = allTasks.filter(t => t.status === status);
+        return res.status(200).json(filtered);
+      }
+      return res.status(200).json(allTasks);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
     }
-    return res.status(200).json(allTasks);
   }
 
   if (req.method === 'POST') {
@@ -25,11 +29,11 @@ module.exports = (req, res) => {
       if (typeof body === 'string') {
         body = JSON.parse(body);
       }
-      const { title, description, customerId, dueDate } = body;
+      const { title, description, customerId, dueDate, priority } = body;
       if (!title) {
         return res.status(400).json({ error: 'Title is required' });
       }
-      const newTask = tasks.add(title, description, customerId, dueDate);
+      const newTask = await tasks.add(title, description, customerId, dueDate, priority);
       return res.status(201).json(newTask);
     } catch (error) {
       return res.status(500).json({ error: error.message });
